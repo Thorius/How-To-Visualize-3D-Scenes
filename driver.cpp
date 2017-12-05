@@ -57,8 +57,6 @@ Vector3 scene_color(Ray const& r, Hitable & world, int depth)
         } else {
             return Vector3(0, 0, 0);
         }
-        // TODO: Refactor lambertian shade color
-        //return 0.5f * (*record.color) + 0.5f * scene_color(Ray(record.p, target - record.p), world);
     } else {
         // Sky color
         Vector3 unit_direction = unit_vector(r.direction());

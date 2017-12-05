@@ -1,5 +1,5 @@
 #ifndef METALH
-#define METALh
+#define METALH
 
 #include "material.hpp"
 #include "vector3.hpp"
@@ -16,9 +16,11 @@ private:
 
 bool Metal::scatter(Ray const& ray, HitRecord const& record, Vector3 & attenuation, Ray & scattered) const
 {
-    // TODO: Implement perfect reflection. Fill out and use
-    // the reflect function in ray.hpp.
-    return false;
+    Vector3 reflected = reflect(unit_vector(ray.direction()), record.normal);
+    scattered = Ray(record.p, reflected);
+    attenuation = albedo;
+    // There is a scattered ray only if the external ray has hit the surface on the outside
+    return dot(scattered.direction(), record.normal) > 0.0f;
 }
 
 #endif

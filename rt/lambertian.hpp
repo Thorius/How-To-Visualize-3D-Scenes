@@ -4,6 +4,7 @@
 #include "material.hpp"
 #include "vector3.hpp"
 #include "ray.hpp"
+#include "sampling.hpp"
 
 class Lambertian : public Material {
 public:
@@ -16,8 +17,10 @@ private:
 
 bool Lambertian::scatter(Ray const& ray, HitRecord const& record, Vector3 & attenuation, Ray & scattered) const
 {
-    // TODO: Refactor shading from the scene_color function here.
-    return false;
+    Vector3 target = record.p + record.normal + random_in_unit_sphere();
+    scattered = Ray(record.p, target - record.p);
+    attenuation = albedo;
+    return true;
 }
 
 #endif
