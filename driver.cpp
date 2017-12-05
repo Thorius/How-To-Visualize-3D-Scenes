@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <limits>
+#include <cmath>
 
 #include "rt/vector3.hpp"
 #include "rt/camera.hpp"
@@ -43,15 +44,21 @@ Vector3 scene_color(Ray const& r, Hitable & world)
 {
     HitRecord record;
     if (world.hit(r, 0.0f, std::numeric_limits<float>::max(), record)) {
-        // TODO: Add a recursive call to the function, by tracing a reflected ray
-        //       whose direction is randomly perturbed in a unit sphere. Use the random_in_unit_sphere().
-        return 0.5f * (*record.color);
+        Vector3 target = record.p + record.normal + random_in_unit_sphere();
+        return 0.5f * (*record.color) + 0.5f * scene_color(Ray(record.p, target - record.p), world);
     } else {
         // Sky color
         Vector3 unit_direction = unit_vector(r.direction());
         float t = 0.5f * (unit_direction.y() + 1.0f);
         return (1.0f - t) * Vector3(1, 1, 1) + t * Vector3(0.45, 0.65, 1.0);
     }
+}
+
+// Gamma correction - a lot of image viewers assume that the output is gamma corrected.
+// For our purposes, just applying sqrt to each of the values is sufficient.
+Vector3 gamma_correction(Vector3 const& color)
+{
+    return Vector3(std::sqrt(color.r()), std::sqrt(color.g()), std::sqrt(color.b()));
 }
 
 int main()
@@ -68,7 +75,7 @@ int main()
     Camera cam(origin, lookat, up, 90, float(nx) / float(ny));
     // Actual scene
     Composite world;
-    Sphere sphere_small(Vector3(0, 0, -2), 0.5);
+    Sphere sphere_small(Vector3(0, 0, -1), 0.5);
     sphere_small.color = Vector3(0.4, 0.4, 0.4);
     Sphere sphere_large(Vector3(0, -100.5, 1), 100);
     sphere_large.color = Vector3(0.1, 0.8, 0.2);
@@ -80,9 +87,9 @@ int main()
             auto u = static_cast<float>(i) / static_cast<float>(nx);
             auto v = static_cast<float>(j) / static_cast<float>(ny);
             auto col = scene_color(cam.get_ray(u, v), world);
-            output[j][i] = 255.99f * col;
+            output[j][i] = 255.99f * gamma_correction(col);
         }
     }
-    output_ppm_image("sphere_hit.ppm", output);
+    output_ppm_image("simple_scene.ppm", output);
     return 0;
 }
