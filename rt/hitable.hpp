@@ -14,8 +14,9 @@ struct HitRecord
 };
 
 class Hitable  {
-    public:
-        virtual bool hit(Ray const& r, float t_min, float t_max, HitRecord & rec) const = 0;
+public:
+    virtual bool hit(Ray const& r, float t_min, float t_max, HitRecord & rec) const = 0;
+    virtual ~Hitable() {}
 };
 
 #endif

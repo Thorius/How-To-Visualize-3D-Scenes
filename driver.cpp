@@ -75,16 +75,16 @@ Vector3 gamma_correction(Vector3 const& color)
 int main()
 {
     // Image parameters
-    int const nx = 600;
-    int const ny = 300;
+    int const nx = 900;
+    int const ny = 500;
     int const ns = 50;
     Film output;
     resize_film(output, nx, ny);
     // Camera parameters
-    Vector3 origin(0, 0, 0);
+    Vector3 origin(0, 0.5, 1);
     Vector3 lookat(0, 0, -4);
     Vector3 up(0, 1, 0);
-    Camera cam(origin, lookat, up, 90, float(nx) / float(ny));
+    Camera cam(origin, lookat, up, 100, float(nx) / float(ny));
     // Actual scene
     Composite world;
     Lambertian sphere_mat_1(Vector3(0.8, 0.2, 0.2));
@@ -92,13 +92,19 @@ int main()
     Metal sphere_mat_2(Vector3(0.7, 0.8, 0.2));
     Sphere sphere_small_2(Vector3(-1.1, 0, -1), 0.5, sphere_mat_2);
     Metal sphere_mat_3(Vector3(0.7, 0.7, 0.9));
-    Sphere sphere_small_3(Vector3(1.1, 0, -1), 0.5, sphere_mat_3);
-    Lambertian sphere_large_mat(Vector3(0.8, 0.9, 0.1));
-    Sphere sphere_large(Vector3(0, -100.5, 1), 100, sphere_large_mat);
+    Sphere sphere_small_3(Vector3(1.1, 0, -1),0.5, sphere_mat_3);
+    Lambertian sphere_mat_4(Vector3(0.9, 0.1, 0.2));
+    Sphere sphere_small_4(Vector3(3.1, 2, 4), 0.5, sphere_mat_4);
+    Lambertian sphere_large_mat_1(Vector3(0.8, 0.9, 0.1));
+    Sphere sphere_large_1(Vector3(0, -50.5, 1), 50, sphere_large_mat_1);
+    Metal sphere_large_mat_2(Vector3(0.3, 0.3, 0.9));
+    Sphere sphere_large_2(Vector3(5, 26.5, -7), 25, sphere_large_mat_2);
     world.add_hitable(sphere_small_1);
     world.add_hitable(sphere_small_2);
     world.add_hitable(sphere_small_3);
-    world.add_hitable(sphere_large);
+    world.add_hitable(sphere_small_4);
+    world.add_hitable(sphere_large_1);
+    world.add_hitable(sphere_large_2);
     // Progress monitoring variables
     std::cout << "Progress:\n|" << std::string(30, '=') << "|\n|";
     auto tenth_row = ny / 30;
