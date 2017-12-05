@@ -16,6 +16,12 @@ class Ray
         Vector3 dir;
 };
 
+inline Vector3 reflect(Vector3 const& v, Vector3 const&n)
+{
+    // TODO: Return the vector that is the reflection of v around n
+    return v;
+}
+
 #endif
 
 

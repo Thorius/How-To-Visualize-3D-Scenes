@@ -11,6 +11,9 @@
 #include "rt/sphere.hpp"
 #include "rt/composite.hpp"
 #include "rt/sampling.hpp"
+#include "rt/material.hpp"
+#include "rt/lambertian.hpp"
+#include "rt/metal.hpp"
 
 using Film = std::vector<std::vector<Vector3>>;
 
@@ -39,13 +42,23 @@ void output_ppm_image(std::string const& filename, Film const& image)
     }
 }
 
+constexpr int const max_depth = 30;
+
 // Color function
-Vector3 scene_color(Ray const& r, Hitable & world)
+Vector3 scene_color(Ray const& r, Hitable & world, int depth)
 {
     HitRecord record;
-    if (world.hit(r, 0.0f, std::numeric_limits<float>::max(), record)) {
+    if (world.hit(r, 0.001f, std::numeric_limits<float>::max(), record)) {
+        Ray scattered;
+        Vector3 attenuation;
         Vector3 target = record.p + record.normal + random_in_unit_sphere();
-        return 0.5f * (*record.color) + 0.5f * scene_color(Ray(record.p, target - record.p), world);
+        if (depth < max_depth && record.material->scatter(r, record, attenuation, scattered)) {
+            return attenuation*scene_color(scattered, world, depth + 1);
+        } else {
+            return Vector3(0, 0, 0);
+        }
+        // TODO: Refactor lambertian shade color
+        //return 0.5f * (*record.color) + 0.5f * scene_color(Ray(record.p, target - record.p), world);
     } else {
         // Sky color
         Vector3 unit_direction = unit_vector(r.direction());
@@ -76,14 +89,14 @@ int main()
     Camera cam(origin, lookat, up, 90, float(nx) / float(ny));
     // Actual scene
     Composite world;
-    Sphere sphere_small_1(Vector3(0, 0, -1), 0.5);
-    sphere_small_1.color = Vector3(0.4, 0.4, 0.4);
-    Sphere sphere_small_2(Vector3(-1.1, 0, -1), 0.5);
-    sphere_small_2.color = Vector3(0.7, 0.3, 0.3);
-    Sphere sphere_small_3(Vector3(1.1, 0, -1), 0.5);
-    sphere_small_3.color = Vector3(0.3, 0.3, 0.7);
-    Sphere sphere_large(Vector3(0, -100.5, 1), 100);
-    sphere_large.color = Vector3(0.1, 0.8, 0.2);
+    Lambertian sphere_mat_1(Vector3(0.8, 0.2, 0.2));
+    Sphere sphere_small_1(Vector3(0, 0, -1), 0.5, sphere_mat_1);
+    Metal sphere_mat_2(Vector3(0.7, 0.8, 0.2));
+    Sphere sphere_small_2(Vector3(-1.1, 0, -1), 0.5, sphere_mat_2);
+    Metal sphere_mat_3(Vector3(0.7, 0.7, 0.9));
+    Sphere sphere_small_3(Vector3(1.1, 0, -1), 0.5, sphere_mat_3);
+    Lambertian sphere_large_mat(Vector3(0.8, 0.9, 0.1));
+    Sphere sphere_large(Vector3(0, -100.5, 1), 100, sphere_large_mat);
     world.add_hitable(sphere_small_1);
     world.add_hitable(sphere_small_2);
     world.add_hitable(sphere_small_3);
@@ -98,7 +111,7 @@ int main()
             for (int s = 0; s != ns; ++s) {
                 auto u = static_cast<float>(i + random_number()) / static_cast<float>(nx);
                 auto v = static_cast<float>(j + random_number()) / static_cast<float>(ny);
-                accum += scene_color(cam.get_ray(u, v), world);
+                accum += scene_color(cam.get_ray(u, v), world, 0);
             }
             accum /= static_cast<float>(ns);
             output[j][i] = 255.99f * gamma_correction(accum);
