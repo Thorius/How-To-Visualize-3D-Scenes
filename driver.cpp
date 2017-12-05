@@ -16,6 +16,7 @@
 #include "rt/metal.hpp"
 
 using Film = std::vector<std::vector<Vector3>>;
+using Color = Vector3;
 
 void resize_film(Film & film, unsigned const width, unsigned height)
 {
