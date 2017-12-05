@@ -66,6 +66,7 @@ int main()
     // Image parameters
     unsigned const nx = 600;
     unsigned const ny = 300;
+    unsigned const ns = 50;
     Film output;
     resize_film(output, nx, ny);
     // Camera parameters
@@ -81,15 +82,23 @@ int main()
     sphere_large.color = Vector3(0.1, 0.8, 0.2);
     world.add_hitable(sphere_small);
     world.add_hitable(sphere_large);
+    // Progress monitoring variables
+    std::cout << "Progress:\n|" << std::string(30, '=') << "|\n|";
+    auto tenth_row = ny / 30;
     // Render loop
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
+            // TODO: Average values from ns randomly perturbed rays in a given pixel.
             auto u = static_cast<float>(i) / static_cast<float>(nx);
             auto v = static_cast<float>(j) / static_cast<float>(ny);
             auto col = scene_color(cam.get_ray(u, v), world);
             output[j][i] = 255.99f * gamma_correction(col);
         }
+        if (j % tenth_row == 0) {
+            std::cout << '=';
+        }
     }
+    std::cout << "|\n";
     output_ppm_image("simple_scene.ppm", output);
     return 0;
 }
