@@ -64,9 +64,9 @@ Vector3 gamma_correction(Vector3 const& color)
 int main()
 {
     // Image parameters
-    unsigned const nx = 600;
-    unsigned const ny = 300;
-    unsigned const ns = 50;
+    int const nx = 600;
+    int const ny = 300;
+    int const ns = 50;
     Film output;
     resize_film(output, nx, ny);
     // Camera parameters
@@ -76,11 +76,17 @@ int main()
     Camera cam(origin, lookat, up, 90, float(nx) / float(ny));
     // Actual scene
     Composite world;
-    Sphere sphere_small(Vector3(0, 0, -1), 0.5);
-    sphere_small.color = Vector3(0.4, 0.4, 0.4);
+    Sphere sphere_small_1(Vector3(0, 0, -1), 0.5);
+    sphere_small_1.color = Vector3(0.4, 0.4, 0.4);
+    Sphere sphere_small_2(Vector3(-1.1, 0, -1), 0.5);
+    sphere_small_2.color = Vector3(0.7, 0.3, 0.3);
+    Sphere sphere_small_3(Vector3(1.1, 0, -1), 0.5);
+    sphere_small_3.color = Vector3(0.3, 0.3, 0.7);
     Sphere sphere_large(Vector3(0, -100.5, 1), 100);
     sphere_large.color = Vector3(0.1, 0.8, 0.2);
-    world.add_hitable(sphere_small);
+    world.add_hitable(sphere_small_1);
+    world.add_hitable(sphere_small_2);
+    world.add_hitable(sphere_small_3);
     world.add_hitable(sphere_large);
     // Progress monitoring variables
     std::cout << "Progress:\n|" << std::string(30, '=') << "|\n|";
@@ -88,11 +94,14 @@ int main()
     // Render loop
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
-            // TODO: Average values from ns randomly perturbed rays in a given pixel.
-            auto u = static_cast<float>(i) / static_cast<float>(nx);
-            auto v = static_cast<float>(j) / static_cast<float>(ny);
-            auto col = scene_color(cam.get_ray(u, v), world);
-            output[j][i] = 255.99f * gamma_correction(col);
+            Vector3 accum(0, 0, 0);
+            for (int s = 0; s != ns; ++s) {
+                auto u = static_cast<float>(i + random_number()) / static_cast<float>(nx);
+                auto v = static_cast<float>(j + random_number()) / static_cast<float>(ny);
+                accum += scene_color(cam.get_ray(u, v), world);
+            }
+            accum /= static_cast<float>(ns);
+            output[j][i] = 255.99f * gamma_correction(accum);
         }
         if (j % tenth_row == 0) {
             std::cout << '=';
