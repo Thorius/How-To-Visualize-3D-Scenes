@@ -57,13 +57,13 @@ int main()
     Film output;
     // Camera parameters
     Vector3 origin(0, 0, 0);
-    Vector3 lookat(0, 0, 4);
+    Vector3 lookat(0, 0, -4);
     Vector3 up(0, 1, 0);
     Camera cam(origin, lookat, up, 90, float(nx) / float(ny));
     resize_film(output, nx, ny);
     // Actual scene
     Composite world;
-    Sphere sphere_small(Vector3(0, 0, 2), 0.5);
+    Sphere sphere_small(Vector3(0, 0, -2), 0.5);
     Sphere sphere_large(Vector3(0, -100.5, 1), 100);
     world.add_hitable(sphere_small);
     world.add_hitable(sphere_large);
