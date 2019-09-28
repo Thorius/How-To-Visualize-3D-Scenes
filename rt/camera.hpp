@@ -10,7 +10,7 @@ constexpr double const pi = 3.14159265359;
 class Camera {
     public:
         Camera(Vector3 const& lookfrom, Vector3 const& lookat, Vector3 const& vup, float vfov, float aspect) {
-            float theta = vfov * pi/180;
+            float theta = float(vfov * pi/180);
             float half_height = std::tan(theta/2);
             float half_width = aspect * half_height;
             origin = lookfrom;
